@@ -1,10 +1,10 @@
 import { Checkbox, Input, Select } from '@chakra-ui/react';
 import styled from '@emotion/styled';
+import React from 'react';
 import { Controller } from 'react-hook-form';
 
-import { Spacing } from '@/components/common/layouts/Spacing';
-import { useOrderFormContext } from '@/hooks/useOrderFormContext';
-
+import { useOrderFormContext } from '../../../../../hooks/useOrderFormContext';
+import { Spacing } from '../../../../common/layouts/Spacing';
 import { LabelText } from '../Common/LabelText';
 
 export const CashReceiptFields = () => {
