@@ -12,8 +12,8 @@ import { authSessionStorage } from '@/utils/storage';
 export const LoginPage = () => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
-  const [queryParams] = useSearchParams();
   const [isSignup, setIsSignup] = useState(false);
+  const [queryParams] = useSearchParams();
 
   const handleConfirm = () => {
     if (!id || !password) {
@@ -21,9 +21,6 @@ export const LoginPage = () => {
       return;
     }
 
-    if (isSignup) {
-      alert('회원가입이 완료되었습니다. 자동으로 로그인합니다.');
-    }
     // TODO: API 연동
 
     // TODO: API 연동 전까지 임시 로그인 처리
@@ -33,11 +30,37 @@ export const LoginPage = () => {
     return window.location.replace(redirectUrl);
   };
 
+  const handleKakaoLogin = async () => {
+    try {
+      // 카카오 로그인 API 호출 (API 배포 받은 후 수정)
+      const response = await fetch('/api/members/kakao', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const redirectUrl = queryParams.get('redirect') ?? `${window.location.origin}/`;
+        window.location.replace(redirectUrl);
+      } else {
+        alert('카카오 로그인에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('카카오 로그인 요청 중 오류 발생:', error);
+      alert('카카오 로그인 요청 중 오류가 발생했습니다.');
+    }
+  };
+
   return (
     <Wrapper>
       <Logo src={KAKAO_LOGO} alt="카카고 CI" />
       <FormWrapper>
-        <UnderlineTextField placeholder="이름" value={id} onChange={(e) => setId(e.target.value)} />
+        <UnderlineTextField
+          placeholder="이름 또는 이메일"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
+        />
         <Spacing />
         <UnderlineTextField
           type="password"
@@ -45,13 +68,12 @@ export const LoginPage = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <Spacing
-          height={{
-            initial: 40,
-            sm: 60,
-          }}
-        />
+
+        <Spacing height={{ initial: 40, sm: 60 }} />
         <Button onClick={handleConfirm}>{isSignup ? '회원가입' : '로그인'}</Button>
+        <Spacing height={{ initial: 20 }} />
+        <KakaoButton onClick={handleKakaoLogin}>카카오로 로그인하기</KakaoButton>
+        <Spacing height={{ initial: 20 }} />
         <SignupSwitch onClick={() => setIsSignup(!isSignup)}>
           {isSignup ? '로그인 화면으로 돌아가기' : '회원가입'}
         </SignupSwitch>
@@ -83,6 +105,13 @@ const FormWrapper = styled.article`
     border: 1px solid rgba(0, 0, 0, 0.12);
     padding: 60px 52px;
   }
+`;
+
+const KakaoButton = styled(Button)`
+  background-color: #fee500;
+  color: #000;
+  border: 1px solid #fee500;
+  font-size: 16px;
 `;
 
 const SignupSwitch = styled.div`

@@ -1,6 +1,5 @@
 import { Checkbox, Input, Select } from '@chakra-ui/react';
 import styled from '@emotion/styled';
-import React from 'react';
 import { Controller } from 'react-hook-form';
 
 import { useOrderFormContext } from '../../../../../hooks/useOrderFormContext';
