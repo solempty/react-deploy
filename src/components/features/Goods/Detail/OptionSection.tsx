@@ -22,9 +22,10 @@ export const OptionSection = ({ productId }: Props) => {
   const { data: options } = useGetProductOptions({ productId });
 
   const [countAsString, setCountAsString] = useState('1');
+  const [selectedOption, setSelectedOption] = useState<string>('');
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const totalPrice = useMemo(() => detail.price * Number(countAsString), [detail, countAsString]);
+  const totalPrice = useMemo(() => detail.price * Number(countAsString), [detail.price, countAsString]);
 
   const navigate = useNavigate();
   const authInfo = useAuth();
@@ -73,7 +74,20 @@ export const OptionSection = ({ productId }: Props) => {
 
   return (
     <Wrapper>
-      <CountOptionItem name={options[0]?.name} value={countAsString} onChange={setCountAsString} />
+      <OptionSelector>
+        <label htmlFor="option">옵션</label>
+        <select id="option" value={selectedOption} onChange={(e) => setSelectedOption(e.target.value)}>
+          <option value="" disabled>옵션을 선택하세요</option>
+          {options.map((option) => (
+            <option key={option.name} value={option.name}>{option.name}</option>
+          ))}
+        </select>
+      </OptionSelector>
+      <CountOptionItem
+        name={selectedOption || '수량'}
+        value={countAsString}
+        onChange={setCountAsString}
+      />
       <BottomWrapper>
         <PricingWrapper>
           총 결제 금액 <span>{totalPrice.toLocaleString()}원</span>
@@ -98,6 +112,18 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+`;
+
+const OptionSelector = styled.div`
+  margin-bottom: 20px;
+  label {
+    margin-right: 10px;
+    font-weight: bold;
+  }
+  select {
+    padding: 5px;
+    font-size: 16px;
+  }
 `;
 
 const BottomWrapper = styled.div`
