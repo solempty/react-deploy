@@ -57,7 +57,7 @@ export const LoginPage = () => {
       <Logo src={KAKAO_LOGO} alt="카카고 CI" />
       <FormWrapper>
         <UnderlineTextField
-          placeholder="이름 또는 이메일"
+          placeholder="이메일"
           value={id}
           onChange={(e) => setId(e.target.value)}
         />
