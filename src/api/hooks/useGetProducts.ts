@@ -6,8 +6,7 @@ import {
 
 import type { ProductData } from '@/types';
 
-import { BASE_URL } from '../instance';
-import { fetchInstance } from './../instance/index';
+import { BASE_URL, fetchInstance } from '../instance';
 
 type RequestParams = {
   categoryId: string;
@@ -44,17 +43,22 @@ export const getProductsPath = ({ categoryId, pageToken, maxResults }: RequestPa
 };
 
 export const getProducts = async (params: RequestParams): Promise<ProductsResponseData> => {
-  const response = await fetchInstance.get<ProductsResponseRawData>(getProductsPath(params));
-  const data = response.data;
+  try {
+    const response = await fetchInstance.get<ProductsResponseRawData>(getProductsPath(params));
+    const data = response.data;
 
-  return {
-    products: data.content,
-    nextPageToken: data.last === false ? (data.number + 1).toString() : undefined,
-    pageInfo: {
-      totalResults: data.totalElements,
-      resultsPerPage: data.size,
-    },
-  };
+    return {
+      products: data.content,
+      nextPageToken: data.last === false ? (data.number + 1).toString() : undefined,
+      pageInfo: {
+        totalResults: data.totalElements,
+        resultsPerPage: data.size,
+      },
+    };
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
+    throw new Error('Could not fetch products');
+  }
 };
 
 type Params = Pick<RequestParams, 'maxResults' | 'categoryId'> & { initPageToken?: string };

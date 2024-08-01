@@ -1,6 +1,8 @@
 import { rest } from 'msw';
 
-import { getCategoriesPath } from './useGetCategorys';
+import { BASE_URL } from '../instance';
+
+const getCategoriesPath = () => `${BASE_URL}/api/categories`;
 
 export const categoriesMockHandler = [
   rest.get(getCategoriesPath(), (_, res, ctx) => {

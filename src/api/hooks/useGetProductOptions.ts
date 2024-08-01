@@ -12,11 +12,16 @@ export type ProductOptionsResponseData = ProductOptionsData[];
 export const getProductOptionsPath = (productId: string) =>
   `${BASE_URL}/api/products/${productId}/options`;
 
-export const getProductOptions = async (params: ProductDetailRequestParams) => {
-  const response = await fetchInstance.get<ProductOptionsResponseData>(
-    getProductOptionsPath(params.productId),
-  );
-  return response.data;
+export const getProductOptions = async (params: ProductDetailRequestParams): Promise<ProductOptionsResponseData> => {
+  try {
+    const response = await fetchInstance.get<ProductOptionsResponseData>(
+      getProductOptionsPath(params.productId),
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch product options:', error);
+    throw new Error('Could not fetch product options');
+  }
 };
 
 export const useGetProductOptions = ({ productId }: Props) => {
