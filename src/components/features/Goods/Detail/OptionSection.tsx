@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useGetProductDetail } from '@/api/hooks/useGetProductDetail';
 import { useGetProductOptions } from '@/api/hooks/useGetProductOptions';
+import { addToWishlist, removeFromWishlist } from '@/api/hooks/useWishlist';
 import { Button } from '@/components/common/Button';
 import { useAuth } from '@/provider/Auth';
 import { getDynamicPath, RouterPath } from '@/routes/path';
@@ -53,24 +54,26 @@ export const OptionSection = ({ productId }: Props) => {
     navigate(RouterPath.order);
   };
 
-  const toggleFavorite = useCallback(() => {
-    setIsFavorite((prev) => {
-      const newState = !prev;
-      const storedWishlist = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
-      let updatedWishlist;
-
-      if (newState) {
-        updatedWishlist = [...storedWishlist, parseInt(productId)];
-        localStorage.setItem(WISHLIST_KEY, JSON.stringify(updatedWishlist));
-        alert('위시 등록 완료');
+  const toggleFavorite = useCallback(async () => {
+    try {
+      if (isFavorite) {
+        await removeFromWishlist(parseInt(productId));
+        setIsFavorite(false);
+        const storedWishlist = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
+        localStorage.setItem(WISHLIST_KEY, JSON.stringify(storedWishlist.filter((id: number) => id !== parseInt(productId))));
+        alert('위시리스트에서 제거되었습니다.');
       } else {
-        updatedWishlist = storedWishlist.filter((id: number) => id !== parseInt(productId));
-        localStorage.setItem(WISHLIST_KEY, JSON.stringify(updatedWishlist));
+        await addToWishlist(parseInt(productId));
+        setIsFavorite(true);
+        const storedWishlist = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
+        localStorage.setItem(WISHLIST_KEY, JSON.stringify([...storedWishlist, parseInt(productId)]));
+        alert('위시리스트에 추가되었습니다.');
       }
-
-      return newState;
-    });
-  }, [productId]);
+    } catch (error) {
+      console.error('Failed to update wishlist:', error);
+      alert('위시리스트 등록에 실패했습니다.');
+    }
+  }, [isFavorite, productId]);
 
   return (
     <Wrapper>

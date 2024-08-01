@@ -2,52 +2,58 @@ import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { getProductDetail } from '@/api/hooks/useGetProductDetail';
+import { addToWishlist, getProductDetails, getWishlistItems, removeFromWishlist } from '@/api/hooks/useWishlist';
 import type { ProductData } from '@/types';
-
-const WISHLIST_KEY = 'wishlist';
 
 export const WishlistPage = () => {
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [products, setProducts] = useState<ProductData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedWishlist = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
-    if (storedWishlist.length === 0) {
-      setWishlist([]);
-    } else {
-      setWishlist(storedWishlist);
-    }
-  }, []);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      const productDetails = await Promise.all(
-        wishlist.map(async (id) => {
-          const product = await getProductDetail({ productId: id.toString() });
-          return product;
-        })
-      );
-      setProducts(productDetails);
+    const fetchWishlistItems = async () => {
+      try {
+        const wishlistResponse = await getWishlistItems();
+        const productIds = wishlistResponse.map((item: { wishId: number }) => item.wishId);
+        setWishlist(productIds);
+        
+        const productDetails = await Promise.all(
+          productIds.map(async (id: number) => {
+            const product = await getProductDetails(id);
+            return product;
+          })
+        );
+        setProducts(productDetails);
+      } catch (error) {
+        console.error('Failed to fetch wishlist items:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (wishlist.length > 0) {
-      fetchProducts();
-    }
-  }, [wishlist]);
+    fetchWishlistItems();
+  }, []);
 
-  const toggleFavorite = (productId: number) => {
-    const updatedWishlist = wishlist.includes(productId)
-      ? wishlist.filter((id) => id !== productId)
-      : [...wishlist, productId];
-    setWishlist(updatedWishlist);
-    localStorage.setItem(WISHLIST_KEY, JSON.stringify(updatedWishlist));
+  const handleToggleFavorite = async (productId: number) => {
+    try {
+      if (wishlist.includes(productId)) {
+        await removeFromWishlist(productId);
+        setWishlist((prev) => prev.filter((id) => id !== productId));
+      } else {
+        await addToWishlist(productId);
+        setWishlist((prev) => [...prev, productId]);
+      }
+    } catch (error) {
+      console.error('Failed to update wishlist:', error);
+    }
   };
 
   return (
     <Wrapper>
       <Title>위시리스트</Title>
-      {products.length > 0 ? (
+      {loading ? (
+        <LoadingMessage>로딩 중...</LoadingMessage>
+      ) : products.length > 0 ? (
         <ItemList>
           {products.map((product) => (
             <WishlistItem key={product.id}>
@@ -57,7 +63,7 @@ export const WishlistPage = () => {
                 <ProductPrice>{product.price.toLocaleString()}원</ProductPrice>
               </ProductDetails>
               <HeartButton
-                onClick={() => toggleFavorite(product.id)}
+                onClick={() => handleToggleFavorite(product.id)}
                 isFavorite={wishlist.includes(product.id)}
               >
                 {wishlist.includes(product.id) ? '❤️' : '🤍'}
@@ -119,4 +125,9 @@ const HeartButton = styled.button<{ isFavorite: boolean }>`
 const EmptyMessage = styled.p`
   font-size: 18px;
   color: #999;
+`;
+
+const LoadingMessage = styled.p`
+  font-size: 18px;
+  color: #333;
 `;
