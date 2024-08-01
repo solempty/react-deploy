@@ -7,6 +7,7 @@ import { HomePage } from '@/pages/Home';
 import { LoginPage } from '@/pages/Login';
 import { MyAccountPage } from '@/pages/MyAccount';
 import { OrderPage } from '@/pages/Order';
+import { OrdersPage } from '@/pages/Orders';
 import { WishlistPage } from '@/pages/Wishlist';
 
 import { PrivateRoute } from './components/PrivateRoute';
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
       {
         path: RouterPath.wishlist,
         element: <WishlistPage />
+      },
+      {
+        path: RouterPath.orders,
+        element: <OrdersPage />
       },
       {
         path: RouterPath.notFound,

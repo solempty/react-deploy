@@ -1,8 +1,12 @@
 import styled from '@emotion/styled';
+import axios from 'axios';
 import { FormProvider, useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
+import { BASE_URL } from '@/api/instance';
 import { Spacing } from '@/components/common/layouts/Spacing';
 import { SplitLayout } from '@/components/common/layouts/SplitLayout';
+import { useAuth } from '@/provider/Auth';
 import type { OrderFormData, OrderHistory } from '@/types';
 
 import { HEADER_HEIGHT } from '../../Layout/Header';
@@ -16,7 +20,6 @@ type Props = {
 
 export const OrderForm = ({ orderHistory }: Props) => {
   const { id, count } = orderHistory;
-
   const methods = useForm<OrderFormData>({
     defaultValues: {
       productId: id,
@@ -27,8 +30,10 @@ export const OrderForm = ({ orderHistory }: Props) => {
     },
   });
   const { handleSubmit } = methods;
+  const navigate = useNavigate();
+  const authInfo = useAuth();
 
-  const handleForm = (values: OrderFormData) => {
+  const handleForm = async (values: OrderFormData) => {
     const { errorMessage, isValid } = validateOrderForm(values);
 
     if (!isValid) {
@@ -36,11 +41,33 @@ export const OrderForm = ({ orderHistory }: Props) => {
       return;
     }
 
-    console.log('values', values);
-    alert('주문이 완료되었습니다.');
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/api/orders`,
+        {
+          optionId: values.productId,
+          quantity: values.productQuantity,
+          message: values.messageCardTextMessage,
+          productId: values.productId,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${encodeURIComponent(authInfo?.token || '')}`,
+          },
+        }
+      );
+
+      if (response.status === 201) {
+        alert('주문이 완료되었습니다.');
+        navigate('/orders');
+      }
+    } catch (error) {
+      console.error('Failed to place order:', error);
+      alert('주문에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
-  // Submit 버튼을 누르면 form이 제출되는 것을 방지하기 위한 함수
   const preventEnterKeySubmission = (e: React.KeyboardEvent<HTMLFormElement>) => {
     const target = e.target as HTMLFormElement;
     if (e.key === 'Enter' && !['TEXTAREA'].includes(target.tagName)) {

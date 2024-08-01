@@ -6,6 +6,7 @@ export const RouterPath = {
   wishlist: '/wishlist',
   productsDetail: '/products/:productId',
   order: '/order',
+  orders: '/orders',
   login: '/login',
   notFound: '*',
 };

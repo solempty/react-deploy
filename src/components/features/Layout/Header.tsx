@@ -24,6 +24,7 @@ export const Header = () => {
         </Link>
         <RightWrapper>
           <StyledLink to={RouterPath.wishlist}>위시리스트</StyledLink>
+          <StyledLink to={RouterPath.orders}>주문 목록</StyledLink>
           {authInfo ? (
             <LinkButton onClick={() => navigate(RouterPath.myAccount)}>내 계정</LinkButton>
           ) : (
