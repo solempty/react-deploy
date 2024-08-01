@@ -12,4 +12,4 @@
 
 ## 2단계 - 배포하기
 
-- [ ] github pages를 사용하여 배포하기
+- [x] github pages를 사용하여 배포하기
