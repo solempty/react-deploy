@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import { fetchInstance } from '@/api/instance';
+import { BASE_URL, fetchInstance } from '@/api/instance';
 import KAKAO_LOGO from '@/assets/kakao_logo.svg';
 import { Button } from '@/components/common/Button';
 import { UnderlineTextField } from '@/components/common/Form/Input/UnderlineTextField';
@@ -54,25 +54,8 @@ export const LoginPage = () => {
     }
   };
 
-  const handleKakaoLogin = async () => {
-    try {
-      const response = await fetchInstance.post('/api/members/kakao');
-
-      console.log('Kakao Login Response Status:', response.status);
-      console.log('Kakao Login Response URL:', response.request.responseURL);
-
-      if (response.status === 200) {
-        authSessionStorage.set(response.data.token);
-
-        const redirectUrl = queryParams.get('redirect') ?? `${window.location.origin}/`;
-        window.location.replace(redirectUrl);
-      } else {
-        alert(`카카오 로그인 실패: ${response.data.message}`);
-      }
-    } catch (error) {
-      console.error('카카오 로그인 요청 중 오류 발생:', error);
-      alert('카카오 로그인 요청 중 오류가 발생했습니다.');
-    }
+  const handleKakaoLogin = () => {
+    window.location.replace(`${BASE_URL}/api/members/kakao`);
   };
 
   return (
