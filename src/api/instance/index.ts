@@ -16,7 +16,7 @@ const initInstance = (config: AxiosRequestConfig): AxiosInstance => {
   return instance;
 };
 
-export const BASE_URL = 'http://13.124.137.243:8080'; //김민주 쿠키 API
+export const BASE_URL = 'http://43.203.182.55:8080'; //배준호 쿠키 API
 
 export const fetchInstance = initInstance({
   baseURL: BASE_URL,
