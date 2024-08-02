@@ -1,6 +1,5 @@
 import styled from '@emotion/styled';
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 
 import { BASE_URL, fetchInstance } from '@/api/instance';
 import KAKAO_LOGO from '@/assets/kakao_logo.svg';
@@ -14,7 +13,6 @@ export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignup, setIsSignup] = useState(false);
-  const [queryParams] = useSearchParams();
 
   const handleSubmit = async () => {
     if (!email || !password) {
@@ -37,14 +35,9 @@ export const LoginPage = () => {
         });
       }
 
-      console.log('Response Status:', response.status);
-      console.log('Response URL:', response.request.responseURL);
-
       if (response.status === 200 || response.status === 201) {
         authSessionStorage.set(response.data.token);
-
-        const redirectUrl = queryParams.get('redirect') ?? `${window.location.origin}/`;
-        window.location.replace(redirectUrl);
+        redirectToPost(`${BASE_URL}/api/members/redirect`, { token: response.data.token });
       } else {
         alert(`오류 발생: ${response.data.message || '서버에서 오류가 발생했습니다.'}`);
       }
@@ -55,7 +48,27 @@ export const LoginPage = () => {
   };
 
   const handleKakaoLogin = () => {
-    window.location.replace(`${BASE_URL}/api/members/kakao`);
+    redirectToPost(`${BASE_URL}/api/members/kakao`, {});
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const redirectToPost = (url: string, data: { [key: string]: any }) => {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = data[key];
+        form.appendChild(input);
+      }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
   };
 
   return (
