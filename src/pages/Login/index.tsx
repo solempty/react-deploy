@@ -16,32 +16,41 @@ export const LoginPage = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [queryParams] = useSearchParams();
 
-  const handleConfirm = async () => {
+  const handleSubmit = async () => {
     if (!email || !password) {
       alert('이메일과 비밀번호를 입력해주세요.');
       return;
     }
 
     try {
-      const response = await fetchInstance.post('/api/members/login', {
-        email,
-        password,
-      });
+      let response;
+
+      if (isSignup) {
+        response = await fetchInstance.post('/api/members/register', {
+          email,
+          password,
+        });
+      } else {
+        response = await fetchInstance.post('/api/members/login', {
+          email,
+          password,
+        });
+      }
 
       console.log('Response Status:', response.status);
       console.log('Response URL:', response.request.responseURL);
 
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 201) {
         authSessionStorage.set(response.data.token);
 
         const redirectUrl = queryParams.get('redirect') ?? `${window.location.origin}/`;
         window.location.replace(redirectUrl);
       } else {
-        alert(`로그인 실패: ${response.data.message}`);
+        alert(`오류 발생: ${response.data.message || '서버에서 오류가 발생했습니다.'}`);
       }
     } catch (error) {
-      console.error('로그인 요청 중 오류 발생:', error);
-      alert('로그인 요청 중 오류가 발생했습니다.');
+      console.error('요청 중 오류 발생:', error);
+      alert('요청 중 오류가 발생했습니다.');
     }
   };
 
@@ -84,7 +93,7 @@ export const LoginPage = () => {
         />
 
         <Spacing height={{ initial: 40, sm: 60 }} />
-        <Button onClick={handleConfirm}>{isSignup ? '회원가입' : '로그인'}</Button>
+        <Button onClick={handleSubmit}>{isSignup ? '회원가입' : '로그인'}</Button>
         <Spacing height={{ initial: 20 }} />
         <KakaoButton onClick={handleKakaoLogin}>카카오로 로그인하기</KakaoButton>
         <Spacing height={{ initial: 20 }} />
