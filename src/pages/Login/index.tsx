@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { fetchInstance } from '@/api/instance';
 import KAKAO_LOGO from '@/assets/kakao_logo.svg';
 import { Button } from '@/components/common/Button';
 import { UnderlineTextField } from '@/components/common/Form/Input/UnderlineTextField';
@@ -10,35 +11,33 @@ import { breakpoints } from '@/styles/variants';
 import { authSessionStorage } from '@/utils/storage';
 
 export const LoginPage = () => {
-  const [id, setId] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignup, setIsSignup] = useState(false);
   const [queryParams] = useSearchParams();
 
   const handleConfirm = async () => {
-    if (!id || !password) {
-      alert('아이디와 비밀번호를 입력해주세요.');
+    if (!email || !password) {
+      alert('이메일과 비밀번호를 입력해주세요.');
       return;
     }
 
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id, password }),
+      const response = await fetchInstance.post('/api/members/login', {
+        email,
+        password,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        authSessionStorage.set(data.token);
+      console.log('Response Status:', response.status);
+      console.log('Response URL:', response.request.responseURL);
+
+      if (response.status === 200) {
+        authSessionStorage.set(response.data.token);
 
         const redirectUrl = queryParams.get('redirect') ?? `${window.location.origin}/`;
         window.location.replace(redirectUrl);
       } else {
-        const errorData = await response.json();
-        alert(`로그인 실패: ${errorData.message}`);
+        alert(`로그인 실패: ${response.data.message}`);
       }
     } catch (error) {
       console.error('로그인 요청 중 오류 발생:', error);
@@ -48,22 +47,18 @@ export const LoginPage = () => {
 
   const handleKakaoLogin = async () => {
     try {
-      const response = await fetch('/api/members/kakao', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetchInstance.post('/api/members/kakao');
 
-      if (response.ok) {
-        const data = await response.json();
-        authSessionStorage.set(data.token);
+      console.log('Kakao Login Response Status:', response.status);
+      console.log('Kakao Login Response URL:', response.request.responseURL);
+
+      if (response.status === 200) {
+        authSessionStorage.set(response.data.token);
 
         const redirectUrl = queryParams.get('redirect') ?? `${window.location.origin}/`;
         window.location.replace(redirectUrl);
       } else {
-        const errorData = await response.json();
-        alert(`카카오 로그인 실패: ${errorData.message}`);
+        alert(`카카오 로그인 실패: ${response.data.message}`);
       }
     } catch (error) {
       console.error('카카오 로그인 요청 중 오류 발생:', error);
@@ -73,12 +68,12 @@ export const LoginPage = () => {
 
   return (
     <Wrapper>
-      <Logo src={KAKAO_LOGO} alt="카카고 CI" />
+      <Logo src={KAKAO_LOGO} alt="카카오 CI" />
       <FormWrapper>
         <UnderlineTextField
           placeholder="이메일"
-          value={id}
-          onChange={(e) => setId(e.target.value)}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
         <Spacing />
         <UnderlineTextField
