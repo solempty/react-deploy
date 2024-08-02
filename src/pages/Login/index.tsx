@@ -15,24 +15,39 @@ export const LoginPage = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [queryParams] = useSearchParams();
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!id || !password) {
       alert('아이디와 비밀번호를 입력해주세요.');
       return;
     }
 
-    // TODO: API 연동
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, password }),
+      });
 
-    // TODO: API 연동 전까지 임시 로그인 처리
-    authSessionStorage.set(id);
+      if (response.ok) {
+        const data = await response.json();
+        authSessionStorage.set(data.token);
 
-    const redirectUrl = queryParams.get('redirect') ?? `${window.location.origin}/`;
-    return window.location.replace(redirectUrl);
+        const redirectUrl = queryParams.get('redirect') ?? `${window.location.origin}/`;
+        window.location.replace(redirectUrl);
+      } else {
+        const errorData = await response.json();
+        alert(`로그인 실패: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error('로그인 요청 중 오류 발생:', error);
+      alert('로그인 요청 중 오류가 발생했습니다.');
+    }
   };
 
   const handleKakaoLogin = async () => {
     try {
-      // 카카오 로그인 API 호출 (API 배포 받은 후 수정)
       const response = await fetch('/api/members/kakao', {
         method: 'POST',
         headers: {
@@ -41,10 +56,14 @@ export const LoginPage = () => {
       });
 
       if (response.ok) {
+        const data = await response.json();
+        authSessionStorage.set(data.token);
+
         const redirectUrl = queryParams.get('redirect') ?? `${window.location.origin}/`;
         window.location.replace(redirectUrl);
       } else {
-        alert('카카오 로그인에 실패했습니다.');
+        const errorData = await response.json();
+        alert(`카카오 로그인 실패: ${errorData.message}`);
       }
     } catch (error) {
       console.error('카카오 로그인 요청 중 오류 발생:', error);
